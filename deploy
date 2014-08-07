@@ -1,0 +1,3 @@
+#!/bin/bash
+middleman build
+rsync -avz build/* dorje@php1.newearthnation.org:/srv/zptime/
