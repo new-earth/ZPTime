@@ -48,8 +48,8 @@ class Time.Models.TimeModel extends Backbone.Model
     return @degrees if @degrees? # cached value
 
     # Giza = UTC + 2
-    # 6pm
-    hours = @dateTime.getUTCHours() + 2 + 18
+    # 6pm Giza = 0 degrees
+    hours = (@dateTime.getUTCHours() + 2) + 6
     hours %= 24
     
     minutes = ((hours * 60) + @dateTime.getUTCMinutes())
