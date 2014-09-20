@@ -4,29 +4,10 @@ class Time.Models.TimeModel extends Backbone.Model
     @setDateTime(jsDate || new Date())
   
   setDateTime: (jsDate)->
-    @clearCache()
     @dateTime = jsDate
-
-    @set 
-      seconds:  @dateTime.getSeconds()
-      quadrant: @getQuadrant()
-      degrees:  Math.floor(@getDegrees())
-      date:     @getDate()
-      month:    @dateTime.getUTCMonth() + 1 # js date is 0-based
-      year:     @dateTime.getUTCFullYear()
-
-  # FIXME: This function should get the correct date, accounting 
-  # for the moment when one day becomes the next.
-  # Currently we are just getting UTC date.
-  getDate: ->
-    @dateTime.getUTCDate()
-
-  clearCache: ->
-    delete @degrees
+    @calculateTime()
 
   tick: =>
-    @clearCache()
-
     secs = @get 'seconds'
     secs += 1
     if secs >= 60
@@ -44,9 +25,7 @@ class Time.Models.TimeModel extends Backbone.Model
       @set quadrant: quad
     @set seconds: secs
 
-  getDegrees: ->
-    return @degrees if @degrees? # cached value
-
+  calculateTime: ->
     # Giza = UTC + 2
     # 6pm Giza = 0 degrees
     hours = (@dateTime.getUTCHours() + 2) + 6
@@ -54,14 +33,23 @@ class Time.Models.TimeModel extends Backbone.Model
     
     minutes = ((hours * 60) + @dateTime.getUTCMinutes())
 
-    dayMinutes = (24 * 60)
+    dayMinutes = (24 * 60) # minutes in a day
     degrees = (minutes / dayMinutes) * 360
-    @degrees = degrees
-    return @degrees
 
-
-  getQuadrant: ->
-    degrees = @getDegrees()
-    degreeRemainder = degrees - Math.floor(degrees)
+    degreeRemainder = degrees - Math.floor(degrees) # the decimal part
     quadrant = Math.floor(degreeRemainder * 4) + 1
-    quadrant
+
+    @set 
+      seconds:  @dateTime.getSeconds()
+      quadrant: quadrant
+      degrees:  Math.floor(degrees)
+      date:     @getDate()
+      month:    @dateTime.getUTCMonth() + 1 # js date is 0-based
+      year:     @dateTime.getUTCFullYear()
+
+  # This copies the date to a new object. If called a lot, this could be pretty inefficient.
+  getDate: ->
+    d = new Date(@dateTime + 8*60*60*1000) # 8 hours, in milliseconds
+    d.getUTCDate()
+
+

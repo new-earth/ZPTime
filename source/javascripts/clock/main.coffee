@@ -26,9 +26,11 @@ window.Time =
     clearInterval @interval
 
 
-$ ->
+$(document).ready ->
   Time.init();
 
+
+# -- Utilities --
 
 Number.prototype.lpad = (size)->
   str = String(@)
